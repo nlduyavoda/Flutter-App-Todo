@@ -4,9 +4,11 @@ import 'package:simple_task_manager/models/event.dart';
 import 'package:simple_task_manager/screens/add_event.dart';
 import 'package:simple_task_manager/services/db_service.dart';
 import 'package:simple_task_manager/utils/database_helper.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp());
 }
 

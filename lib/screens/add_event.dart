@@ -1,9 +1,19 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:simple_task_manager/custom_widgets/custom_button.dart';
+import 'package:simple_task_manager/data/data.dart';
 import 'package:simple_task_manager/mixins/validation_mixin.dart';
 import 'package:simple_task_manager/models/event.dart';
 import 'package:simple_task_manager/services/db_service.dart';
 import 'package:simple_task_manager/utils/database_helper.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz;
+
+FlutterLocalNotificationsPlugin notificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+AndroidInitializationSettings androidInitializationSettings;
+InitializationSettings initializationSettings;
 
 class AddEvent extends StatefulWidget {
   final EventModel event;
@@ -29,6 +39,8 @@ class _AddEventState extends State<AddEvent> with ValidationMixin {
   @override
   void initState() {
     super.initState();
+    initializing();
+    tz.initializeTimeZones();
     dbService = DbService();
     databaseHelper = DatabaseHelper();
     _title = TextEditingController();
@@ -39,6 +51,53 @@ class _AddEventState extends State<AddEvent> with ValidationMixin {
       populateForm();
     }
     processing = false;
+  }
+
+  void initializing() async {
+    androidInitializationSettings = AndroidInitializationSettings("app_icon");
+    initializationSettings =
+        InitializationSettings(android: androidInitializationSettings);
+    await notificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: onSelectNotification);
+  }
+
+  void _showNotifications() async {
+    await displayNotification();
+  }
+
+  Future<void> displayNotification() async {
+    AndroidNotificationDetails androidNotificationDetails =
+        AndroidNotificationDetails(
+            "channel ID", "channel title", "channel body",
+            priority: Priority.high,
+            importance: Importance.max,
+            ticker: 'test');
+    NotificationDetails notificationDetails =
+        NotificationDetails(android: androidNotificationDetails);
+    await notificationsPlugin.show(
+        0, '${_title.text}', '${_description.text}', notificationDetails);
+  }
+
+  Future onSelectNotification(String payload) {
+    if (payload != null) {
+      print(payload);
+    }
+  }
+
+  Future onDidReceiveLocalNotification(
+      int id, String title, String body, String payload) async {
+    return CupertinoAlertDialog(
+        title: Text(title),
+        content: Text(body),
+        actions: <Widget>[
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () {
+              print("");
+            },
+            child: Text("ok"),
+          )
+        ]);
   }
 
   void populateForm() {
@@ -140,7 +199,6 @@ class _AddEventState extends State<AddEvent> with ValidationMixin {
                           padding: EdgeInsets.symmetric(
                               horizontal: 16.0, vertical: 8.0),
                           child: TextFormField(
-                            
                             controller: _title,
                             validator: validateTextInput,
                             decoration: InputDecoration(
@@ -220,6 +278,7 @@ class _AddEventState extends State<AddEvent> with ValidationMixin {
                                               processing = true;
                                             });
                                             saveTask();
+                                            _showNotifications();
                                           }
                                         }),
                                     SizedBox(height: 10.0),

@@ -32,6 +32,7 @@ dependencies:
   shared_preferences: ^0.5.7+3
   path_provider: ^1.6.11
   sqflite: any
+  flutter_local_notifications: ^4.0.1+2
 
 dev_dependencies:
   flutter_test:
