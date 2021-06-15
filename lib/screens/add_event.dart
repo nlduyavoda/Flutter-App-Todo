@@ -74,14 +74,22 @@ class _AddEventState extends State<AddEvent> with ValidationMixin {
             ticker: 'test');
     NotificationDetails notificationDetails =
         NotificationDetails(android: androidNotificationDetails);
-    await notificationsPlugin.show(
-        0, '${_title.text}', '${_description.text}', notificationDetails);
+    // await notificationsPlugin.show(
+    //     0, '${_title.text}', '${_description.text}', notificationDetails);
+    var scheduleTime = DateTime.now().add(Duration(seconds: 2));
+    await notificationsPlugin.schedule(0, '${_title.text}',
+        '${_description.text}', scheduleTime, notificationDetails);
   }
 
   Future onSelectNotification(String payload) {
-    if (payload != null) {
-      print(payload);
-    }
+    // if (payload != null) {
+    //   print(payload);
+    // }
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              content: Text("notification clicked $payload"),
+            ));
   }
 
   Future onDidReceiveLocalNotification(
@@ -93,7 +101,7 @@ class _AddEventState extends State<AddEvent> with ValidationMixin {
           CupertinoDialogAction(
             isDefaultAction: true,
             onPressed: () {
-              print("");
+              print("ok");
             },
             child: Text("ok"),
           )
